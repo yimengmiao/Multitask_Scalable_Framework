@@ -73,6 +73,22 @@ def remove_punctuation(text):
     text = re.sub(f"[{re.escape(punctuation)}]", '', text)
     return text
 
+
+# 定义最长公共子串函数
+def longest_common_substring(s1, s2):
+    m, n = len(s1), len(s2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    longest, lcs_end = 0, 0
+    for i in range(m):
+        for j in range(n):
+            if s1[i] == s2[j]:
+                dp[i + 1][j + 1] = dp[i][j] + 1
+                if dp[i + 1][j + 1] > longest:
+                    longest = dp[i + 1][j + 1]
+                    lcs_end = i + 1
+    return s1[lcs_end - longest:lcs_end], longest
+
+
 if __name__ == '__main__':
     text = """
     

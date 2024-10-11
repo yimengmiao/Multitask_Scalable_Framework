@@ -1,8 +1,36 @@
+import time
+
 import pandas as pd
 import os
 from business_code.teacher_classification_api_version import Teacher_four_categories
 from business_code.breakpoint_and_topic_extractor import topic_extract
 from config.common_config import DEFAULT_MODEL_PARAMETERS, DEFAULT_DATA_PROCESSOR
+from data_processor.public_code_data_process import remove_punctuation, longest_common_substring
+
+
+# 定义匹配函数
+def match_string(mod_string, original_data, start_idx):
+    mod_string_no_punct = remove_punctuation(mod_string)
+    # 快速匹配
+    for idx in range(start_idx, len(original_data)):
+        row = original_data.iloc[idx]
+        if (mod_string_no_punct in row['text_no_punct']) or (row['text_no_punct'] in mod_string_no_punct):
+            return row['start_time'], row['end_time'], idx + 1
+    # 最长公共子串匹配
+    max_length = 0
+    match_idx = -1
+    for idx in range(start_idx, min(start_idx + 3, len(original_data))):
+        row = original_data.iloc[idx]
+        lcs, length = longest_common_substring(mod_string_no_punct, row['text_no_punct'])
+        if length >= 0.8 * len(mod_string_no_punct) or length >= 0.8 * len(row['text_no_punct']):
+            if length > max_length:
+                max_length = length
+                match_idx = idx
+    if match_idx != -1:
+        row = original_data.iloc[match_idx]
+        return row['start_time'], row['end_time'], match_idx + 1
+    else:
+        return None, None, start_idx
 
 
 def theme_extraction(data, model_parameters=None, data_processor=None):
@@ -14,15 +42,18 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
     :return: topic_extract 函数的输出结果
     """
 
-
     try:
         # 输入数据校验
         if not isinstance(data, dict):
             raise ValueError("输入的数据应为字典格式。")
-        # todo: sample_data的较参中，label里的值(label值 是一个list列表)一定要有0，没有0就不让其进行下一步的逻辑处理，直接报输入数据有问题。
+
         required_keys = {'start_time', 'end_time', 'text', 'label'}
         if not required_keys.issubset(data.keys()):
             raise ValueError(f"输入数据缺少必要的键，必须包含 {required_keys}")
+
+        # sample_data的较参中，label里的值(label值 是一个list列表)一定要有0，没有0就不让其进行下一步的逻辑处理，直接报输入数据有问题。
+        if 0 not in data['label']:
+            raise ValueError("输入数据中的 'label' 列表必须包含至少一个值为 0。")
 
         # 使用默认的模型参数和数据处理器配置，如果有自定义的则覆盖
         model_parameters = model_parameters or DEFAULT_MODEL_PARAMETERS.copy()
@@ -77,12 +108,15 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
 
         # 调用 topic_extract 函数
         final_output = topic_extract(params_for_topic_extract)
-
+        print("final_output",final_output)
         # 检查返回结果
         if not final_output:
             raise ValueError("topic_extract 返回空结果。")
 
-        # TODO: 再给每个 sub_text 加上对应的 start_time, end_time
+        # todo：再给每个 sub_text 加上对应的 start_time,end_time
+        # original_data = pd.DataFrame(data)
+        # original_data['text_no_punct'] = original_data['text'].apply(remove_punctuation)
+
 
         # 返回最终结果
         return final_output
@@ -97,16 +131,17 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
 if __name__ == '__main__':
     # 您可以在这里替换为自己的 data
     df = pd.read_excel("data/original_data/test2.xlsx")
+    # 这是一个课堂场景下的师生对话文本片段。
     sample_data = {
         'start_time': df['start_time'].to_list(),
         'end_time': df['end_time'].to_list(),
         'text': df['text'].to_list(),
         'label': df['label'].to_list()
     }
-
+    start_time = time.time()
     # 调用接口函数
-
     result = theme_extraction(sample_data)
-
+    end_time = time.time()
+    print("consume_time",end_time - start_time)
     # 输出结果
     print("最终输出结果:", result)

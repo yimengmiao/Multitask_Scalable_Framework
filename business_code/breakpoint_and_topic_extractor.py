@@ -44,7 +44,7 @@ def merge_texts_into_dict(list1, dict1):
 
     # 根据 dict1 中的 d_number，将对应的文本合并并添加到 sub_text 键中
     for sub in dict1['split'].values():
-        d_numbers = sub.get('d_number', [])
+        d_numbers = sub.get('no', [])
         if not isinstance(d_numbers, list):
             d_numbers = json.loads(d_numbers)
         merged_texts = []
@@ -99,7 +99,7 @@ def topic_extract(params):
             params["model_parameters"] = ALTERNATE_MODEL_PARAMETERS
             params["model_parameters"]["prompt"] = prompt2
             params['model_parameters']['text'] = prompt2_input
-            logger.info("调用付费模型gpt4o的入参 params: %s", params)
+            logger.info("prompt3任务：调用付费模型gpt4o的入参 params: %s", params)
             model_api = ModelAPI(params.get("model_parameters", ""))
             breakpoint_json = model_api.analyze_text()
             logger.info("备用模型gpt4o 分析的Prompt2的输出结果: %s", breakpoint_json)
@@ -139,18 +139,30 @@ def topic_extract(params):
     except Exception as e:
         logger.error("模型 API 调用错误: %s", e)
         logger.error("详细堆栈信息：\n%s", traceback.format_exc())
-        return {"error": f"Model API error during prompt3 analysis: {str(e)}"}
+        logger.info("尝试调用付费模型 gpt4o")
+        try:
+            params["model_parameters"] = ALTERNATE_MODEL_PARAMETERS
+            params['model_parameters']['text'] = prompt2_output
+            params['model_parameters']['prompt'] = prompt3
+            logger.info("调用付费模型gpt4o的入参 params: %s", params)
+            model_api = ModelAPI(params.get("model_parameters", ""))
+            topic_content_raw = model_api.analyze_text()
+            logger.info(f"备用模型分析的Prompt3的输出结果: %s", topic_content_raw)
+
+        except Exception as fallback_e:
+            # 如果这个模型调用也失败，则返回错误信息
+            logger.error("备用模型gpt4o 调用失败: %s", fallback_e)
+            logger.error("详细堆栈信息：\n%s", traceback.format_exc())
+            return {"error": "Failed to analysis topic content."}
 
     # 解析模型返回的主题内容
     topic_content = extract_json_using_patterns(topic_content_raw)
-    if not topic_content:
-        logger.error("无法从模型返回的结果中提取主题内容")
-        return {"error": "Failed to extract topic content from model output."}
 
     # 把相同主题的子师生对话段合并起来
     prompt3_input = prompt2_output.split('师生对话')[1:]
     logger.info("prompt3_input: %s", prompt3_input)
     logger.info("topic_content: %s", topic_content)
+    # 这里是把同一个主题的子文本段合并。
     updated_topic_content = merge_texts_into_dict(prompt3_input, topic_content)
 
     return updated_topic_content
