@@ -41,6 +41,9 @@ class ModelAPI:
         elif self.model_family.startswith("qwen"):
             from openai import OpenAI
             return OpenAI(api_key=self.api_key, base_url=self.base_url)
+        elif self.model_family.startswith("local"):
+            from openai import OpenAI
+            return OpenAI(api_key=self.api_key, base_url=self.base_url)
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
