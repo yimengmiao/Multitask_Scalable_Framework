@@ -9,7 +9,7 @@ class ModelAPI:
             raise ValueError("Parameter 'api_key' is required.")
 
         self.base_url = params.get('base_url') or self._get_base_url()
-        self.api_version = params.get('api_version')
+        self.api_version = params.get('api_version', "")
         self.text = params.get('text', '')
         self.prompt = params.get('prompt', '')
         self.model = params.get('model_name')
@@ -28,6 +28,8 @@ class ModelAPI:
             return "https://zonekey-gpt4o.openai.azure.com/"
         elif self.model_family.startswith("qwen"):
             return "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        elif self.model_family.startswith("local"):
+            return "http://localhost:8000/v1"
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 

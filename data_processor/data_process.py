@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .dialogue_split import DialougueProcessor
+from .dialogue_split import DialogueProcessor
 from .teacher_dialogue_classification import TeacherDialogueClassificationProcessor
 from .prompt3_input_data_process import Prompt3inputProcessor
 
@@ -28,7 +28,7 @@ class DataProcessor:
             self.processor = TeacherDialogueClassificationProcessor(self.dataset, self.T)
 
         elif self.task == "dialogue_processing":
-            self.processor = DialougueProcessor(self.dataset)  # 添加对DialougueProcessor的支持
+            self.processor = DialogueProcessor(self.dataset)  # 添加对DialougueProcessor的支持
         elif self.task == "topic_extraction":
             self.processor = Prompt3inputProcessor(self.prompt2_input, self.split_point)  #
             # 可以根据需求添加不同任务的处理类

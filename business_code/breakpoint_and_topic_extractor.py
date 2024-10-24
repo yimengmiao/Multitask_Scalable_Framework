@@ -124,7 +124,7 @@ def topic_extract(params):
     prompt2_output = processor2.process_and_save_sub_dfs()  # 这里输出的就是Prompt3的输入了
 
     # 读取Prompt3的内容
-    with open("prompt/prompt3主题提取.txt", "r", encoding="utf-8") as f:
+    with open("prompt/topic_extraction/prompt3主题提取.txt", "r", encoding="utf-8") as f:
         prompt3 = f.read()
     params['model_parameters']['text'] = prompt2_output
     params['model_parameters']['prompt'] = prompt3

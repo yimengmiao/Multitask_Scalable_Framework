@@ -68,7 +68,7 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
         }
 
         # 从 txt 文件中读取 Teacher_four_categories 的 prompt
-        teacher_prompt_path = 'prompt/teacher_dialouge_classification_prompt1.txt'
+        teacher_prompt_path = 'prompt/topic_extraction/prompt1老师四分类.txt'
         if not os.path.exists(teacher_prompt_path):
             raise FileNotFoundError(f"找不到指定的提示文件: {teacher_prompt_path}")
 
@@ -97,7 +97,7 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
         }
 
         # 从 txt 文件中读取 topic_extract 的 prompt
-        topic_prompt_path = 'prompt/prompt2输出”讲解“的分割点.txt'
+        topic_prompt_path = 'prompt/topic_extraction/prompt2输出”讲解“的分割点.txt'
         if not os.path.exists(topic_prompt_path):
             raise FileNotFoundError(f"找不到指定的提示文件: {topic_prompt_path}")
 

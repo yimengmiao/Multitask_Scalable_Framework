@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class DialougueProcessor:
+class DialogueProcessor:
     def __init__(self, data: List[Dict[str, Any]]):
         self.data = data
         self.df = None
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         {"start_time": 70, "end_time": 80, "text": "学生回应4", "label": 1, "gpt4o_result": None}
     ]
 
-    processor = DialougueProcessor(data)
+    processor = DialogueProcessor(data)
     segments = processor.process_data()
     print("segments", segments)
     final_texts = processor.process_segments(segments)
