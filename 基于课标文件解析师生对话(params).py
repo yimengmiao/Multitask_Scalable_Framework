@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import pandas as pd
 from openai import OpenAI  # 根据您的OpenAI客户端库调整此导入
 
 
@@ -7,7 +9,7 @@ def process_files(api_key, prompt_file, analysis_file, standard_file, model_file
     处理用于OpenAI分析的文件。
 
     参数说明：
-    - api_key (str): 您的OpenAI API密钥，用于验证对OpenAI API的请求。这是访问API服务所必需的。
+    - api_key (str):百炼大模型上的API密钥，用于访问百炼平台上的各个LLM模型。
     - prompt_file (str): 提示文件的路径。该文件包含将作为对话一部分提供给OpenAI模型的初始提示或指令，设置了对模型的上下文或特定请求。
     - analysis_file (str): 分析文本文件的路径。该文件包含需要由OpenAI模型分析的文本数据，例如需要根据特定标准进行分析的师生对话文本。
     - standard_file (str): 标准参考文件的路径。该文件将上传到OpenAI API，用作分析的参考或上下文，例如课程标准文档。
@@ -59,7 +61,9 @@ def process_files(api_key, prompt_file, analysis_file, standard_file, model_file
 
 if __name__ == '__main__':
     # 示例用法：
-    api_key = "YOUR_API_KEY"
+    df = pd.read_excel("data/original_data/test2.xlsx")
+
+    api_key = "sk-454416d3aac549cd9bf043aa9fa2f158"
     result = process_files(
         api_key=api_key,
         prompt_file="prompt.txt",

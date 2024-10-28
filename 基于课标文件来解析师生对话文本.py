@@ -4,7 +4,7 @@ from pathlib import Path
 from openai import OpenAI
 
 
-def main(prompt_file, analysis_file, standard_file,model_file):
+def main(prompt_file, analysis_file, standard_file, model_file):
     # 配置API Key和基础URL
     client = OpenAI(
         api_key="sk-454416d3aac549cd9bf043aa9fa2f158",
@@ -22,7 +22,7 @@ def main(prompt_file, analysis_file, standard_file,model_file):
     # 上传课程标准文件到 OpenAI 并获取 file_object
     file_object1 = client.files.create(file=Path(standard_file), purpose="file-extract")
 
-    #上传模型知识文件到 OpenAI 并获取 file_object
+    # 上传模型知识文件到 OpenAI 并获取 file_object
     file_object2 = client.files.create(file=Path(model_file), purpose="file-extract")
     # 进行模型对话请求
     completion = client.chat.completions.create(
@@ -38,7 +38,7 @@ def main(prompt_file, analysis_file, standard_file,model_file):
     decoded_str = content.encode().decode('unicode_escape')
 
     # 输出结果
-    print("输出结果",decoded_str)
+    print("输出结果", decoded_str)
     return decoded_str
 
 
@@ -50,13 +50,14 @@ if __name__ == "__main__":
                         help="Path to the analysis text file (待分析文本.txt)")
     parser.add_argument("--standard_file", type=str, required=True,
                         help="Path to the standard file (【3.0】义务教育课程标准（2022年版）.txt）")
-    parser.add_argument("--model_file", type=str, required=True, help="Path to the tip file (这里传入的是模型知识.txt中对应的部分内容共有四块,分别为：教学方法.txt、教学过程.txt、问答行为.txt、教学效果.txt）")
+    parser.add_argument("--model_file", type=str, required=True,
+                        help="Path to the tip file (这里传入的是模型知识.txt中对应的部分内容共有四块,分别为：教学方法.txt、教学过程.txt、问答行为.txt、教学效果.txt）")
 
     # 解析参数
     args = parser.parse_args()
 
     # 调用主函数
-    main(args.prompt_file, args.analysis_file, args.standard_file,args.model_file)
+    main(args.prompt_file, args.analysis_file, args.standard_file, args.model_file)
 
 # 使用示例：
 # python 基于课标文件来解析师生对话文本.py --prompt_file prompt.txt --analysis_file 待分析文本.txt --standard_file 【3.0】义务教育生物课程标准（2022年版）.txt --model_file 教学方法.txt
