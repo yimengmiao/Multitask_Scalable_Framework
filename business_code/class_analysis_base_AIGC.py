@@ -7,8 +7,8 @@ from openai import OpenAI
 def main(prompt_file, analysis_file, standard_file):
     # 配置API Key和基础URL
     client = OpenAI(
-        api_key="sk-454416d3aac549cd9bf043aa9fa2f158",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        api_key="",
+        base_url="",
     )
 
     # 读取 prompt 文件
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     main(args.prompt_file, args.analysis_file, args.standard_file)
 
 # 使用示例：
-# python Analyzing teacher-student dialogue texts based on curriculum standards documents.py --prompt_file path/to/prompt.txt --analysis_file path/to/待分析文本.txt --standard_file path/to/【3.0】义务教育语文课程标准（2022年版）.txt
+# python class_analysis_base_AIGC.py --prompt_file path/to/prompt.txt --analysis_file path/to/待分析文本.txt --standard_file path/to/【3.0】义务教育语文课程标准（2022年版）.txt

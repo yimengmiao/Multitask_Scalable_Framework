@@ -60,4 +60,4 @@ if __name__ == "__main__":
     main(args.prompt_file, args.analysis_file, args.standard_file, args.model_file)
 
 # 使用示例：
-# python 基于课标文件来解析师生对话文本.py --prompt_file prompt.txt --analysis_file 待分析文本.txt --standard_file 【3.0】义务教育生物课程标准（2022年版）.txt --model_file 教学方法.txt
+# python class_analysis_base_AIGC.py --prompt_file prompt.txt --analysis_file 待分析文本.txt --standard_file 【3.0】义务教育生物课程标准（2022年版）.txt --model_file 教学方法.txt
