@@ -28,6 +28,7 @@ class ModelAPI:
             return "https://zonekey-gpt4o.openai.azure.com/"
         elif self.model_family.startswith("qwen"):
             return "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        # todo: 这里使用local时，下面的那个url链接其实是可以更换的，当前我使用autodl部署，服务链接会因开启的机器 不同而不断变化，所以这里当未来服务url固定时，再更改
         elif self.model_family.startswith("local"):
             return "http://localhost:8000/v1"
         else:

@@ -8,12 +8,12 @@ parser = argparse.ArgumentParser(
     description='Chatbot Interface with Customizable Parameters')
 parser.add_argument('--model-url',
                     type=str,
-                    default='https://u515714-b271-0cf7fdd4.bjb1.seetacloud.com:8443/v1',
+                    default='https://u515714-9cca-000da7aa.bjb1.seetacloud.com:8443/v1',
                     help='Model URL')
 parser.add_argument('-m',
                     '--model',
                     type=str,
-                    default="/root/autodl-fs/Qwen/Qwen2___5-32B-Instruct",
+                    default="qwen2_5-32b-instruct",
                     help='Model name for the chatbot')
 parser.add_argument('--temp',
                     type=float,
@@ -79,4 +79,5 @@ def predict(message, history):
 # Create and launch a chat interface with Gradio
 gr.ChatInterface(predict).queue().launch(server_name=args.host,
                                          server_port=args.port,
+
                                          share=True)
