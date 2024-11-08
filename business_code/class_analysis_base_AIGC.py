@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some files for OpenAI analysis.")
     parser.add_argument("--prompt_file", type=str, required=True, help="Path to the prompt file (prompt.txt)")
     parser.add_argument("--analysis_file", type=str, required=True,
-                        help="Path to the analysis text file (待分析文本.txt)")
+                        help="Path to the analysis text file (待分析文本(长).txt)")
     parser.add_argument("--standard_file", type=str, required=True,
                         help="Path to the standard file (【3.0】义务教育语文课程标准（2022年版）.txt）")
 
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     main(args.prompt_file, args.analysis_file, args.standard_file)
 
 # 使用示例：
-# python class_analysis_base_AIGC.py --prompt_file path/to/prompt.txt --analysis_file path/to/待分析文本.txt --standard_file path/to/【3.0】义务教育语文课程标准（2022年版）.txt
+# python class_analysis_base_AIGC.py --prompt_file path/to/prompt.txt --analysis_file path/to/待分析文本(长).txt --standard_file path/to/【3.0】义务教育语文课程标准（2022年版）.txt

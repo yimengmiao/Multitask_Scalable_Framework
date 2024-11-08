@@ -1,82 +1,105 @@
+import os
+import time
 
-from pathlib import Path
-from openai import OpenAI
+from model_api import ModelAPI
 
 
-def analyze_text_with_llm(prompt_path, analysis_text_path, standard_path, teaching_methods_path,
-                          teaching_process_path, qna_behavior_path, teaching_effect_path, api_key, base_url):
-    """
-    使用指定的 LLM 服务对文本进行分析。将课程标准和相关教学内容文件上传到 LLM 服务，
-    然后根据 prompt 和分析文本进行对话生成。
-
-    参数：
-    - prompt_path: 提示词文件的路径
-    - analysis_text_path: 待分析文本文件的路径
-    - standard_path: 课程标准文件的路径
-    - teaching_methods_path: 教学方法文件路径
-    - teaching_process_path: 教学过程文件路径
-    - qna_behavior_path: 问答行为文件路径
-    - teaching_effect_path: 教学效果文件路径
-    - api_key: LLM 服务的 API 密钥
-    - base_url: LLM 服务的基础 URL
-
-    返回：
-    - LLM 对话生成的分析结果
-    """
-    # 初始化 LLM 客户端
-    # todo: 配置阿里云的API密钥和基础URL。你可以改成我们自己部署好的LLM服务url，但是要注意，我们部署的LLM服务中是没有文件上传并解析的功能的，
-    #  所以这个代码只能调用大厂那边LLM的服务。
-    client = OpenAI(api_key=api_key, base_url=base_url)
-
-    # 读取提示词文件
-    with open(prompt_path, "r", encoding='utf-8') as f:
+def construct_prompt(prompt_file_path, analysis_data_file_path, class_stand_text_file_path, bc_knowledge_file_paths):
+    # 读取 prompt 文件内容（无需前缀）
+    with open(prompt_file_path, "r", encoding='utf-8') as f:
         prompt_content = f.read()
 
-    # 读取待分析文本文件
-    with open(analysis_text_path, "r", encoding='utf-8') as f:
-        analysis_content = f.read()
+    # 读取待分析文本，并添加前缀
+    analysis_filename = os.path.basename(analysis_data_file_path)
+    analysis_data_prefix = f"{{{analysis_filename}}}的内容如下："
+    with open(analysis_data_file_path, "r", encoding='utf-8') as f:
+        analysis_data_content = analysis_data_prefix + f.read()
 
-    # 上传课程标准和各个教学文件到 LLM 并获取文件对象
-    standard_file = client.files.create(file=Path(standard_path), purpose="file-extract")
-    teaching_methods_file = client.files.create(file=Path(teaching_methods_path), purpose="file-extract")
-    teaching_process_file = client.files.create(file=Path(teaching_process_path), purpose="file-extract")
-    qna_behavior_file = client.files.create(file=Path(qna_behavior_path), purpose="file-extract")
-    teaching_effect_file = client.files.create(file=Path(teaching_effect_path), purpose="file-extract")
+    # 读取课程标准文本，并添加前缀
+    class_stand_prefix = "{新课标内容如下}："
+    with open(class_stand_text_file_path, "r", encoding='utf-8') as f:
+        class_stand_content = class_stand_prefix + f.read()
 
-    # 构造对话请求内容并调用 LLM 进行对话
-    completion = client.chat.completions.create(
-        model="qwen-long",
-        messages=[
-            {
-                'role': 'system',
-                'content': f'fileid://{standard_file.id},fileid://{teaching_methods_file.id},'
-                           f'fileid://{teaching_process_file.id},fileid://{qna_behavior_file.id},'
-                           f'fileid://{teaching_effect_file.id}'
-            },
-            {'role': 'user', 'content': prompt_content }  # 组合 prompt 和待分析文本
-        ]
+    # 读取背景知识文件，并添加前缀
+    bc_knowledge_contents = ''
+    for bc_file_path in bc_knowledge_file_paths:
+        bc_filename = os.path.basename(bc_file_path)
+        bc_prefix = f"{{{bc_filename}}}内容如下："
+        with open(bc_file_path, "r", encoding='utf-8') as f:
+            bc_content = bc_prefix + f.read()
+        bc_knowledge_contents += bc_content
+
+    # 按指定顺序组合所有内容
+    full_prompt = prompt_content + analysis_data_content + class_stand_content + bc_knowledge_contents
+
+    return full_prompt
+
+
+# todo:未来做成一个接口，然后传参就看business_code/业务代码文档/基于AIGC的课堂分析（zonekey）/class_analysis_base_AIGC(params)的代码使用方法.md
+def get_result(params):
+    # 使用 construct_prompt 函数生成 prompt 文本
+    text = construct_prompt(
+        prompt_file_path=params["prompt_file_path"],
+        analysis_data_file_path=params["analysis_data_file_path"],
+        class_stand_text_file_path=params["class_stand_text_file_path"],
+        bc_knowledge_file_paths=params["bc_knowledge_file_paths"]
     )
 
-    # 提取和解码返回的内容
-    raw_content = completion.model_dump_json()
-    result_content = raw_content.encode('latin1').decode('unicode_escape')
+    # 将生成的 prompt 文本添加到 params 中
+    params["prompt"] = text
 
-    # 输出和返回分析结果
-    print("分析结果:", result_content)
-    return result_content
+    # 创建 ModelAPI 实例并进行分析
+    model_api = ModelAPI(params)
+    result = model_api.analyze()
+    return result
 
 
 if __name__ == '__main__':
-# 使用示例
-    analyze_text_with_llm(
-        prompt_path="prompt.txt",
-        analysis_text_path="地球的运动.txt",
-        standard_path="【3.0】义务教育地理课程标准（2022年版）.txt",
-        teaching_methods_path="教学方法.txt",
-        teaching_process_path="教学过程.txt",
-        qna_behavior_path="问答行为.txt",
-        teaching_effect_path="教学效果.txt",
+    # 　用ｑｗｅｎ－ｌｏｎｇ接口调用。
+    # with open("prompt/基于AIGC的课堂分析（zonkey版本）/prompt/教学效果.txt", "r", encoding="utf-8") as f:
+    #     text = f.read()
+    #
+    # params = {
+    #     "model_family": "qwen",
+    #     "api_key": "sk-454416d3aac549cd9bf043aa9fa2f158",
+    #     "prompt": text,
+    #     "model_name": "qwen-long",  # Example model, can be changed
+    #     "max_tokens": 1000,
+    #     "n": 1,
+    #     "temperature": 0.7,
+    #     "use_files": True,
+    #     "files": ["data/original_data/待分析文本.txt", "prompt/基于AICG的课堂分析/模型知识/教学效果.txt",
+    #               "prompt/基于AIGC的课堂分析（zonkey版本）/课程标准/【3.0】义务教育生物课程标准（2022年版）.txt"]
+    # }
+    #
+    # # 创建 ModelAPI 实例并调用方法
+    # model_api = ModelAPI(params)
+    # result = model_api.analyze()
+    # print("Result:", result)
 
-        api_key="sk-454416d3aac549cd9bf043aa9fa2f158",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
-    )
+    # 定义参数，不使用文件，只进行文本分析
+    # 调用模型出结果
+    # 设置文件路径参数
+    start_time = time.time()
+    params = {
+        "model_family": "local",
+        "api_key": "token123",  # 请替换为您的实际 API 密钥
+        "prompt_file_path": "prompt/基于AIGC的课分析（杨州大学版本）/prompt/教学效果.txt",
+        "analysis_data_file_path": "data/original_data/待分析文本.txt",
+        "class_stand_text_file_path": "prompt/基于AIGC的课分析（杨州大学版本）/课程标准/【3.0】义务教育生物课程标准（2022年版）.txt",
+        "bc_knowledge_file_paths": [
+            "prompt/基于AIGC的课分析（杨州大学版本）/模型知识/教学效果.txt",
+
+        ],
+        "model_name": "qwen2_5-32b-instruct",
+        "max_tokens": 2000,
+        "n": 1,
+        "temperature": 0.7,
+        "use_files": False,
+    }
+
+    # 调用 get_result 函数获取最终结果
+    result = get_result(params)
+    end_time = time.time()
+    print("耗时", end_time - start_time)
+    print("结果", result)

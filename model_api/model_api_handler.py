@@ -1,3 +1,7 @@
+from pathlib import Path
+from openai import OpenAI
+
+
 class ModelAPI:
     def __init__(self, params):
         self.model_family = params.get('model_family', '').lower()
@@ -19,6 +23,8 @@ class ModelAPI:
         self.max_tokens = params.get('max_tokens', 1000)
         self.n = params.get('n', 1)
         self.temperature = params.get('temperature', 0.7)
+        self.use_files = params.get('use_files', False)
+        self.files = params.get('files', [])
         self.client = self._get_client()
 
     def _get_base_url(self):
@@ -28,25 +34,18 @@ class ModelAPI:
             return "https://zonekey-gpt4o.openai.azure.com/"
         elif self.model_family.startswith("qwen"):
             return "https://dashscope.aliyuncs.com/compatible-mode/v1"
-        # todo: 这里使用local时，下面的那个url链接其实是可以更换的，当前我使用autodl部署，服务链接会因开启的机器 不同而不断变化，所以这里当未来服务url固定时，再更改
         elif self.model_family.startswith("local"):
-            return "http://localhost:8000/v1"
+            return "https://u515714-abc9-7c4e6193.bjb1.seetacloud.com:8443/v1"  # todo:当前这里是autodl.com部署的接口，未来如有自己的部署接口，更改为自己的url。
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
     def _get_client(self):
-        if self.model_family == "glm-4":
-            from openai import OpenAI
+        if self.model_family == "glm-4" or self.model_family.startswith("qwen") or self.model_family.startswith(
+                "local"):
             return OpenAI(api_key=self.api_key, base_url=self.base_url)
         elif self.model_family == "gpt4o":
             from openai import AzureOpenAI
             return AzureOpenAI(api_key=self.api_key, azure_endpoint=self.base_url, api_version=self.api_version)
-        elif self.model_family.startswith("qwen"):
-            from openai import OpenAI
-            return OpenAI(api_key=self.api_key, base_url=self.base_url)
-        elif self.model_family.startswith("local"):
-            from openai import OpenAI
-            return OpenAI(api_key=self.api_key, base_url=self.base_url)
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
@@ -65,47 +64,67 @@ class ModelAPI:
         )
         return response.choices[0].message.content
 
+    def analyze_with_files(self, prompt, files):
+        # 上传文件并返回文件 ID 列表
+        file_ids = []
+        for file_path in files:
+            if Path(file_path).exists():
+                file_object = self.client.files.create(file=Path(file_path), purpose="file-extract")
+                file_ids.append(f'fileid://{file_object.id}')
+
+        # 创建模型对话请求，结合文件 ID 和文本 prompt
+        completion = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {'role': 'system', 'content': ','.join(file_ids)},
+                {'role': 'user', 'content': prompt}
+            ],
+            max_tokens=self.max_tokens,
+            n=self.n,
+            temperature=self.temperature,
+        )
+        return completion.choices[0].message.content
+
+    def analyze(self):
+        if self.use_files and self.files:
+            return self.analyze_with_files(self.prompt, self.files)
+        else:
+            return self.analyze_text()
+
 
 if __name__ == '__main__':
     # 定义参数
     params = {
-        "model_family": "glm-4",
-        "api_key": "08bd304ed5c588b2c9cb534405241f0e.jPN6gjmvlBe2q1ZZ",
-        "text": "它分别种了什么树呢？谁来说说？于凯，你来说说看。你慢讲啊。嗯，然后呢？",
-        "prompt": """后面的'待分析文本'是一段师生对话，其中，学生话语已经剔除，只保留老师话语，请对老师的话语进行分析，具体分析方法如下所示：
-    将'待分析文本'分割成'发起'、'评价'、'讲解'、'其它'四种子文本段，'发起'的分割尽可能细一点。'发起'是老师邀请、引导、鼓励学生用话语来回应的语句；'评价'是对学生回应的表扬、认可、批评等评价性话语；'讲解'是老师针对知识展开描述或对学生回应的总结；不能归属于上面三种子文本段，归属为'其它'。
-    按照下面'示例'输出：
-    {"result":
-    [{"type":"发起","content":"它分别种了什么树呢？于凯，你来说说看。"}, 
-    {"type":"其它","content":"你慢讲啊，嗯。"},
-    {"type":"发起","content":"然后呢？"},
-    {"type":"讲解","content":"然后种了杏树。"},
-    {"type":"发起","content":"最后呢？"}
-    ]}""",
-        "model_name": "glm-4-flash",
+        "model_family": "qwen",
+        "api_key": "your_api_key_here",
+        "prompt": "你的提示文本",
+        "model_name": "qwen-long",  # Example model, can be changed
         "max_tokens": 1000,
         "n": 1,
-        "temperature": 0.7
+        "temperature": 0.7,
+        "use_files": True,
+        "files": ["file1.txt", "file2.txt"]
     }
-    # 调用GPT4o模型
 
-    # 调用GPT4o模型，传入deployment_name而不是gpt4o
-    # gpt4o_model = ModelAPI(model_family="gpt4o", api_key="b2e709bdd54f4416a734b4a6f8f1c7a0",
-    #                        api_version="2024-02-01")
-    # gpt4o_result = gpt4o_model.analyze_text(text=text_to_analyze, base_prompt=base_prompt, model="soikit_test")
-    # print("type(gpt4o_result)=", type(gpt4o_result))
-    # print("gpt4o_result:", gpt4o_result)
-
-    # # 调用GLM-4模型
     # 创建 ModelAPI 实例并调用方法
     model_api = ModelAPI(params)
-    glm4_result = model_api.analyze_text()
-    print("Result:", glm4_result)
-    print("type(glm4_result)=", type(glm4_result))
-    print("glm4_result:", glm4_result)
+    result = model_api.analyze()
+    print("Result:", result)
 
-    # # 调用Qwen-Long模型
-    # qwen_long_model = ModelAPI(model_family="qwen", api_key=api_key)
-    # qwen_long_result = qwen_long_model.analyze_text(text=text_to_analyze, base_prompt=base_prompt,
-    #                                                 model="qwen2-72b-instruct")
-    # print("qwen_long_result:", qwen_long_result)
+    # 定义参数，不使用文件，只进行文本分析
+    params = {
+        "model_family": "qwen",
+        "api_key": "your_api_key_here",
+        "prompt": "你的提示文本",
+        "text": "这里是你想分析的文本内容",
+        "model_name": "qwen-long",  # Example model, can be changed
+        "max_tokens": 1000,
+        "n": 1,
+        "temperature": 0.7,
+        "use_files": False  # 或者可以直接省略这个参数
+    }
+
+    # 创建 ModelAPI 实例并调用方法
+    model_api = ModelAPI(params)
+    result = model_api.analyze()
+    print("Result:", result)
