@@ -83,5 +83,6 @@ if __name__ == "__main__":
     )
 
 # 使用示例：
+
 # python class_analysis_base_AIGC.py --prompt_file prompt.txt --analysis_file data/original_data/待分析文本(长).txt --standard_file 【3.0】义务教育生物课程标准（2022年版）.txt --TM_file 教学方法.txt --TP_file 课堂活动.txt --AA_file 问答行为.txt --TE_file 教学效果.txt
 # python class_analysis_base_AIGC.py --prompt_file prompt/基于AIGC的课堂分析（zonkey版本）/prompt/教学效果.txt --analysis_file data/original_data/待分析文本.txt --standard_file prompt/基于AIGC的课堂分析（zonkey版本）/课程标准/【3.0】义务教育生物课程标准（2022年版）.txt --TM_file prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/教学方法.txt  --TP_file prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/课堂活动.txt --AA_file prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/问答行为.txt --TE_file prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/教学效果.txt
