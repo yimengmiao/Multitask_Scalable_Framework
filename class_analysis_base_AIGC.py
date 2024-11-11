@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 from openai import OpenAI
 
@@ -50,13 +51,18 @@ def main(prompt_file, analysis_file=None, standard_file=None, TM_file=None, TP_f
         ]
     )
 
-    content = completion.model_dump_json()
-    print("输出结果", content)
+    # 提取并解码 JSON 中的 content 部分
+    content = json.loads(completion.model_dump_json())
+    content_text = content['choices'][0]['message']['content']  # 提取 content 内容
 
-    # 将结果保存到文件
+    print("输出结果", content_text)  # 打印提取的内容
+
+    # 将提取的内容保存到文件
     with open("输出结果.txt", "w", encoding='utf-8') as f:
-        f.write(content)
-    return content
+        f.write(content_text)  # 将 content 内容写入文件
+
+    return content_text  # 返回 content 内容
+
 
 
 if __name__ == "__main__":

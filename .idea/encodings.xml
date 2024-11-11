@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/class_analysis_base_AIGC.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/log/app_log.log" charset="GBK" />
     <file url="file://$PROJECT_DIR$/prompt/基于AIGC的课堂分析/课程标准/【3.0】义务教育英语课程标准（2022年版）.txt" charset="GBK" />
   </component>
