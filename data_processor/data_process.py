@@ -2,8 +2,8 @@ import json
 
 import pandas as pd
 
-from .dialogue_split import DialogueProcessor
-from .teacher_dialogue_classification import TeacherDialogueClassificationProcessor
+from .prompt2_input_data_process import DialogueProcessor
+from .prompt1_input_data_process import TeacherDialogueClassificationProcessor
 from .prompt3_input_data_process import Prompt3inputProcessor
 
 
