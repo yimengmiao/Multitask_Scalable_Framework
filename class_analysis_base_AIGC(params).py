@@ -1,10 +1,21 @@
 import os
 import time
-
 from model_api import ModelAPI
 
 
 def construct_prompt(prompt_file_path, analysis_data_file_path, class_stand_text_file_path, bc_knowledge_file_paths):
+    """
+    生成完整的 prompt 文本，将多个文件内容按指定格式和顺序组合。
+
+    输入:
+        - prompt_file_path (str): prompt 文件的路径。
+        - analysis_data_file_path (str): 待分析文本文件的路径。
+        - class_stand_text_file_path (str): 课程标准文件的路径。
+        - bc_knowledge_file_paths (list of str): 背景知识文件路径列表。
+
+    输出:
+        - full_prompt (str): 组合生成的完整 prompt 文本。
+    """
     # 读取 prompt 文件内容（无需前缀）
     with open(prompt_file_path, "r", encoding='utf-8') as f:
         prompt_content = f.read()
@@ -35,8 +46,21 @@ def construct_prompt(prompt_file_path, analysis_data_file_path, class_stand_text
     return full_prompt
 
 
-# todo:未来做成一个接口，然后传参就看business_code/业务代码文档/基于AIGC的课堂分析（zonekey）/class_analysis_base_AIGC(params)的代码使用方法.md
 def get_result(params):
+    """
+    使用构建的 prompt 文本调用模型 API，进行分析并返回结果。
+
+    输入:
+        - params (dict): 参数字典，包括 prompt 文件路径，模型配置等。
+          - "prompt_file_path" (str): prompt 文件路径。
+          - "analysis_data_file_path" (str): 待分析数据文件路径。
+          - "class_stand_text_file_path" (str): 课程标准文本文件路径。
+          - "bc_knowledge_file_paths" (list of str): 背景知识文件路径列表。
+          - 其他模型相关参数
+
+    输出:
+        - result: 调用模型 API 返回的分析结果。
+    """
     # 使用 construct_prompt 函数生成 prompt 文本
     text = construct_prompt(
         prompt_file_path=params["prompt_file_path"],
@@ -77,9 +101,7 @@ if __name__ == '__main__':
     # result = model_api.analyze()
     # print("Result:", result)
 
-    # 定义参数，不使用文件，只进行文本分析
-    # 调用模型出结果
-    # 设置文件路径参数
+    # 设置文件路径参数并定义分析参数
     start_time = time.time()
     params = {
         "model_family": "local",
@@ -89,7 +111,6 @@ if __name__ == '__main__':
         "class_stand_text_file_path": "prompt/基于AIGC的课分析（杨州大学版本）/课程标准/【3.0】义务教育生物课程标准（2022年版）.txt",
         "bc_knowledge_file_paths": [
             "prompt/基于AIGC的课分析（杨州大学版本）/模型知识/教学效果.txt",
-
         ],
         "model_name": "qwen2_5-32b-instruct",
         "max_tokens": 2000,

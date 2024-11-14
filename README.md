@@ -6,9 +6,9 @@
 
 ## 框架结构
 
-- **模型层（Model Layer）**：提供统一的接口与多种语言模型进行交互，例如 GLM-4、GPT4o、Qwen-Long 等。该层设计为通用模块，可以在不同的业务中复用，并支持未来添加新的模型。
-- **数据处理层（Data Processing Layer）**：根据不同的任务类型，处理和预处理数据，支持多种输入格式。您可以继承 `DialougueProcessor` 类，为新的业务需求实现特定的数据处理逻辑。
-- **业务层（Business Layer）**：将模型层和数据处理层结合，实现具体的业务逻辑。业务层利用模型层和数据处理层提供的通用接口，简化了业务逻辑的实现过程。
+- **模型层（Model Layer）**：[model_api_handler.py](model_api%2Fmodel_api_handler.py)中提供统一的接口与多种语言模型进行交互，例如 GLM-4、GPT4o、Qwen-Long 等。该层设计为通用模块，可以在不同的业务中复用，并支持未来添加新的模型。
+- **数据处理层（Data Processing Layer）**：根据不同的任务类型，处理和预处理数据，支持多种输入格式。您可以继承 [data_process.py](data_processor%2Fdata_process.py)中的`DataProcessor` 类，为新的业务需求实现特定的数据处理逻辑。
+- **业务层（Business Layer）**：[business_code](business_code)仓库中是将模型层和数据处理层结合，实现具体的业务逻辑。业务层利用模型层和数据处理层提供的通用接口，简化了业务逻辑的实现过程。
 
 ## 使用步骤
 
@@ -208,14 +208,3 @@ python your_script.py --data path/to/data.xlsx --config path/to/config.json --pr
 - **错误处理**：在实际应用中，添加必要的错误处理和异常捕获，确保程序的稳定运行。
 - **性能优化**：针对大规模数据处理，考虑性能优化方案，例如批量处理、异步调用等。
 
-## 示例项目
-
-您可以参考提供的老师四分类业务脚本，了解如何使用该框架实现具体的业务需求。该示例展示了如何：
-
-- 使用 `TeacherDialogueClassificationProcessor` 处理数据
-- 利用 `ModelAPI` 调用模型进行分析
-- 将结果保存为 Excel 文件，方便查看和分析
-
----
-
-希望这个使用指南能帮助您快速上手该框架，并利用其灵活的扩展性满足不同的业务需求。

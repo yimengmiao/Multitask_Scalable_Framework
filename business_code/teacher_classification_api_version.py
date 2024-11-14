@@ -165,6 +165,7 @@ def parse_test_result(test_result):
             # 如果直接解析失败，则使用正则模式提取 JSON
             logger.error("JSON 解码错误，尝试使用正则表达式提取 JSON")
             logger.error("详细堆栈信息：\n%s", traceback.format_exc())
+
             return extract_json_using_patterns(test_result)
     else:
         logger.warning("test_result 为空")
@@ -188,12 +189,13 @@ def process_output_result(output_result, model_name):
             test_result = next(iter(third_item.values()))
         else:
             test_result = None
-        logger.debug("提取到的 test_result: %s", test_result)
+        logger.info("提取到的 test_result: %s", test_result)
 
         # 解析模型的返回结果
         contents = parse_test_result(test_result)
-        logger.debug("解析后的内容: %s", contents)
-        logger.debug("子列表: %s", sublist)
+        print("contents", contents)
+        logger.info("解析后的内容: %s", contents)
+        logger.info("子列表: %s", sublist)
 
         new_sublist = []
         # 这里是以防不能从模型的输出结果中解析出 JSON 而做的。
@@ -236,7 +238,7 @@ def row_to_json_dynamic(row, column_name):
         "end_time": row["end_time"],
         "text": row["text"] if pd.notna(row["text"]) else "",
         "label": row["label"],
-        "gpt4o_result": json.loads(row[column_name]) if row[column_name] != "" else None
+        "gpt4o_result": extract_json_using_patterns(row[column_name]) if row[column_name] != "" else None
     }
 
 
@@ -287,7 +289,7 @@ if __name__ == '__main__':
     # 整合所有参数到一个 JSON 列表中
     input_json = {
         'model_parameters': {
-            'model_family': 'gpt4o',
+            'model_family': 'local',
             'api_key': 'b2e709bdd54f4416a734b4a6f8f1c7a0',
             'model_name': 'soikit_test',
             'api_version': '2024-02-01',

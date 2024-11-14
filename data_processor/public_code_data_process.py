@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_json_using_patterns(text):
+    # todo:从文本中提取json这个代码需要一直进行改进。虽然当前的模型返回json的指令遵循能力都很强，但是也说不准未来出现模型退化这种风险。
     """使用一组正则表达式模式来提取 JSON"""
     text = text.strip()
     logger.debug("原始文本: %s", text)
@@ -30,6 +31,7 @@ def extract_json_using_patterns(text):
             logger.debug("匹配到的 JSON: %s", json_str)
             try:
                 result_data = json.loads(json_str)
+                print('result_data', result_data)
                 return result_data
             except json.JSONDecodeError as e:
                 logger.error("JSON 解析失败: %s", e)
