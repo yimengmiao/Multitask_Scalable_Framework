@@ -113,7 +113,7 @@ def theme_extraction(data, model_parameters=None, data_processor=None):
     if not final_output:
         raise ValueError("topic_extract 返回空结果。")
 
-    # todo：再给每个 sub_text 加上对应的 start_time,end_time
+    # todo：再给每个 sub_text 加上对应的 start_time,end_time，做了初步尝试，请查看test.py文件，但做效果不好。
     # original_data = pd.DataFrame(data)
     # original_data['text_no_punct'] = original_data['text'].apply(remove_punctuation)
 
